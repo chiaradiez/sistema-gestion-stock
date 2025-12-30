@@ -28,13 +28,41 @@ app.get('/api/products', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
     try {
-        const { nombre, sku, precio, stock } = req.body;
+        const { nombre, sku, precio, stock, categoriaId } = req.body; // Ahora recibimos el ID
+
         const newProduct = await prisma.producto.create({
-            data: { nombre, sku, precio, stock }
+            data: {
+                nombre,
+                sku,
+                precio,
+                stock,
+                categoriaId: categoriaId ? parseInt(categoriaId) : null // Convertimos a número por seguridad
+            }
         });
         res.json(newProduct);
     } catch (error) {
-        res.status(400).json({ error: 'Error creando producto. El SKU debe ser único.' });
+        res.status(400).json({ error: 'Error creando producto.' });
+    }
+});
+
+// --- RUTAS DE CATEGORÍAS ---
+
+// 1. Obtener todas (Para llenar el select del Frontend)
+app.get('/api/categories', async (req, res) => {
+    const categories = await prisma.categoria.findMany();
+    res.json(categories);
+});
+
+// 2. Crear una categoría nueva
+app.post('/api/categories', async (req, res) => {
+    try {
+        const { nombre } = req.body;
+        const newCategory = await prisma.categoria.create({
+            data: { nombre }
+        });
+        res.json(newCategory);
+    } catch (error) {
+        res.status(400).json({ error: 'La categoría ya existe' });
     }
 });
 

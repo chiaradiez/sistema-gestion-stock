@@ -11,6 +11,27 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Nueva tabla para gestionar las opciones del menú
+model Categoria {
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique // "Periféricos", "Sillas", etc.
+  productos Producto[] // Relación inversa (una categoría tiene muchos productos)
+}
+
+model Producto {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  sku         String   @unique
+  precio      Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  
+  // cambiamos el String simple por una RELACIÓN
+  categoriaId Int?     // Guardamos el ID (ej: 1)
+  categoria   Categoria? @relation(fields: [categoriaId], references: [id])
+
+  creadoEn    DateTime @default(now())
+  movimientos Movimiento[]
+}
 
 // Tabla de Clientes
 model Cliente {
@@ -25,18 +46,6 @@ model Cliente {
   movimientos Movimiento[]
 }
 
-// Tabla de Productos
-model Producto {
-  id          Int      @id @default(autoincrement())
-  nombre      String
-  sku         String   @unique // Código de barras único
-  descripcion String?
-  precio      Decimal  @db.Decimal(10, 2) // Ej: 99999999.99
-  stock       Int      @default(0)
-  creadoEn    DateTime @default(now())
-
-  movimientos Movimiento[]
-}
 
 // Tabla para registrar Entradas y Salidas (Historial)
 model Movimiento {
