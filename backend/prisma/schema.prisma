@@ -1,0 +1,54 @@
+// backend/prisma/schema.prisma
+
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+// Tabla de Clientes
+model Cliente {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String?  @unique // El ? significa opcional
+  telefono  String?
+  direccion String?
+  creadoEn  DateTime @default(now())
+  
+  // Relación con movimientos (se llenará sola después)
+  movimientos Movimiento[]
+}
+
+// Tabla de Productos
+model Producto {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  sku         String   @unique // Código de barras único
+  descripcion String?
+  precio      Decimal  @db.Decimal(10, 2) // Ej: 99999999.99
+  stock       Int      @default(0)
+  creadoEn    DateTime @default(now())
+
+  movimientos Movimiento[]
+}
+
+// Tabla para registrar Entradas y Salidas (Historial)
+model Movimiento {
+  id          Int      @id @default(autoincrement())
+  tipo        String   // "ENTRADA" o "SALIDA"
+  cantidad    Int
+  fecha       DateTime @default(now())
+  
+  // Relaciones
+  productoId  Int
+  producto    Producto @relation(fields: [productoId], references: [id])
+  
+  clienteId   Int?     // Opcional, porque una entrada de stock no tiene cliente
+  cliente     Cliente? @relation(fields: [clienteId], references: [id])
+}
